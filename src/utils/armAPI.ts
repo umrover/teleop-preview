@@ -1,0 +1,17 @@
+import type { RAModeResponse, StowResponse } from './apiTypes'
+import { apiFetch } from './apiFetch'
+
+export const armAPI = {
+  setRAMode(mode: string): Promise<RAModeResponse> {
+    return apiFetch('/arm/ra_mode/', {
+      method: 'POST',
+      body: JSON.stringify({ mode })
+    })
+  },
+
+  stowArm(): Promise<StowResponse> {
+    return apiFetch('/arm/stow/', {
+      method: 'POST'
+    })
+  }
+}
