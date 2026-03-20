@@ -95,7 +95,17 @@
         <h4 class="component-header">Current Course</h4>
         <button class="cmd-btn cmd-btn-danger cmd-btn-sm" @click="handleClearList">Clear</button>
       </div>
-      <div class="bg-theme-view p-2 rounded overflow-y-auto flex flex-col gap-2 grow" data-testid="pw-basic-wp-list">
+      <VueDraggable
+        v-model="erdStore.waypoints"
+        handle=".drag-handle"
+        ghost-class="drag-ghost"
+        class="bg-theme-view p-2 rounded overflow-y-auto flex flex-col gap-2 grow relative"
+        data-testid="pw-basic-wp-list"
+      >
+        <div v-if="erdStore.waypoints.length === 0" class="course-empty-state">
+          <i class="bi bi-signpost-split"></i>
+          <span>No waypoints in course</span>
+        </div>
         <WaypointItem
           v-for="(waypoint, i) in erdStore.waypoints"
           :key="waypoint.db_id || i"
@@ -105,7 +115,7 @@
           @find="erdStore.setHighlighted($event.index)"
           @search="erdStore.setSearch($event.index)"
         />
-      </div>
+      </VueDraggable>
     </div>
 
     <RecordingsModal
@@ -135,6 +145,7 @@
 
 <script lang="ts" setup>
 import { ref, computed, watch, onMounted } from 'vue'
+import { VueDraggable } from 'vue-draggable-plus'
 import WaypointItem from './BasicWaypointItem.vue'
 import RecordingsModal from './RecordingsModal.vue'
 import ConfirmModal from './ConfirmModal.vue'
