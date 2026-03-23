@@ -15,6 +15,10 @@ export const useAutonomyStore = defineStore('autonomy', () => {
   const allCostmapToggle = ref(true)
   const navState = ref('OffState')
 
+  const isNavigating = computed(() =>
+    navState.value !== 'OffState' && navState.value !== 'DoneState'
+  )
+
   const highlightedWaypoint = ref(-1)
   const autonEnabled = ref(false)
   const teleopEnabled = ref(false)
@@ -129,13 +133,25 @@ export const useAutonomyStore = defineStore('autonomy', () => {
   }
 
   async function removeFromStaging(waypoint: AutonWaypoint) {
-    const index = staging.value.indexOf(waypoint)
-    if (index > -1) {
-      const next = [...staging.value]
-      next.splice(index, 1)
-      staging.value = next
-    }
+    const index = staging.value.findIndex(wp => wp.db_id === waypoint.db_id)
+    if (index === -1) return
+    const next = [...staging.value]
+    next.splice(index, 1)
+    staging.value = next
     await saveStaging()
+  }
+
+  async function clearStaging() {
+    staging.value = []
+    await saveStaging()
+  }
+
+  async function stageAllToExecution() {
+    const toMove = staging.value.filter(wp => !isInList(execution.value, wp))
+    if (toMove.length === 0) return
+    execution.value = [...execution.value, ...toMove]
+    staging.value = []
+    await Promise.all([saveStaging(), saveExecution()])
   }
 
   async function saveStaging() {
@@ -155,17 +171,16 @@ export const useAutonomyStore = defineStore('autonomy', () => {
   }
 
   async function removeFromExecution(waypoint: AutonWaypoint) {
-    const index = execution.value.indexOf(waypoint)
-    if (index > -1) {
-      const next = [...execution.value]
-      next.splice(index, 1)
-      execution.value = next
-    }
+    const index = execution.value.findIndex(wp => wp.db_id === waypoint.db_id)
+    if (index === -1) return
+    const next = [...execution.value]
+    next.splice(index, 1)
+    execution.value = next
     await saveExecution()
   }
 
   async function stageToExecution(waypoint: AutonWaypoint) {
-    const stagingIndex = staging.value.indexOf(waypoint)
+    const stagingIndex = staging.value.findIndex(wp => wp.db_id === waypoint.db_id)
     if (stagingIndex === -1) return
 
     const nextStaging = [...staging.value]
@@ -189,7 +204,7 @@ export const useAutonomyStore = defineStore('autonomy', () => {
     if (staging.value.length === 0) return
 
     const [next, ...remaining] = staging.value
-    execution.value = [{ ...next }]
+    execution.value = [...execution.value, { ...next }]
     staging.value = remaining
 
     await Promise.all([saveStaging(), saveExecution()])
@@ -207,7 +222,7 @@ export const useAutonomyStore = defineStore('autonomy', () => {
   }
 
   async function unstageOne(waypoint: AutonWaypoint) {
-    const index = execution.value.indexOf(waypoint)
+    const index = execution.value.findIndex(wp => wp.db_id === waypoint.db_id)
     if (index === -1) return
 
     const nextExecution = [...execution.value]
@@ -242,6 +257,7 @@ export const useAutonomyStore = defineStore('autonomy', () => {
     execution,
     allCostmapToggle,
     navState,
+    isNavigating,
     highlightedWaypoint,
     autonEnabled,
     teleopEnabled,
@@ -264,6 +280,8 @@ export const useAutonomyStore = defineStore('autonomy', () => {
     removeFromStore,
     addToStaging,
     removeFromStaging,
+    clearStaging,
+    stageAllToExecution,
     saveStaging,
     addToExecution,
     removeFromExecution,

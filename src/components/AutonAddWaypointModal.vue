@@ -21,7 +21,7 @@
               <div>
                 <label for="waypointid" class="form-label">Tag ID:</label>
                 <input
-                  v-if="form.type == 1"
+                  v-if="form.type === 1"
                   class="form-control"
                   id="waypointid"
                   v-model="form.tag_id"
@@ -41,12 +41,12 @@
               </div>
               <div class="col-span-2">
                 <label class="form-label">Type:</label>
-                <select class="form-select" v-model="form.type">
-                  <option value="0">No Search</option>
-                  <option value="1">Post</option>
-                  <option value="2">Mallet</option>
-                  <option value="3">Water Bottle</option>
-                  <option value="4">Rock Pick</option>
+                <select class="form-select" v-model.number="form.type">
+                  <option :value="0">No Search</option>
+                  <option :value="1">Post</option>
+                  <option :value="2">Mallet</option>
+                  <option :value="3">Water Bottle</option>
+                  <option :value="4">Rock Pick</option>
                 </select>
               </div>
             </div>

@@ -1,5 +1,5 @@
 <template>
-  <div class="grid grid-rows-3 gap-2">
+  <div class="flex flex-col gap-2">
     <div class="flex flex-col gap-1">
       <span class="data-label">General</span>
       <FeedbackButton
@@ -19,6 +19,16 @@
         :checked="teleopEnabled"
         :action="teleopAction"
         @toggle="handleTeleopToggle"
+      />
+    </div>
+    <div class="flex flex-col gap-1">
+      <span class="data-label">Costmap</span>
+      <FeedbackButton
+        class="w-full"
+        data-testid="pw-costmap-toggle-all"
+        :name="'All Costmaps'"
+        :checked="allCostmapToggle"
+        @toggle="handleCostmapToggle"
       />
     </div>
     <div class="flex flex-col gap-1">
@@ -101,6 +111,7 @@ const pathRelaxationEnabled = computed(() => autonomyStore.pathRelaxationEnabled
 const pathInterpolationEnabled = computed(() => autonomyStore.pathInterpolationEnabled)
 const stereoDetectorEnabled = computed(() => autonomyStore.stereoDetectorEnabled)
 const imageDetectorEnabled = computed(() => autonomyStore.imageDetectorEnabled)
+const allCostmapToggle = computed(() => autonomyStore.allCostmapToggle)
 
 const teleopAction = (newState: boolean) => autonAPI.enableTeleop(newState)
 const purePursuitAction = (newState: boolean) => autonAPI.togglePurePursuit(newState)
@@ -136,5 +147,9 @@ const handleStereoDetectorToggle = (newState: boolean) => {
 
 const handleImageDetectorToggle = (newState: boolean) => {
   autonomyStore.imageDetectorEnabled = newState
+}
+
+const handleCostmapToggle = (newState: boolean) => {
+  autonomyStore.allCostmapToggle = newState
 }
 </script>
