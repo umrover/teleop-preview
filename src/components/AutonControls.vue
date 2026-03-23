@@ -1,7 +1,7 @@
 <template>
-  <div class="grid grid-cols-3 gap-2">
+  <div class="grid grid-rows-3 gap-2">
     <div class="flex flex-col gap-1">
-      <span class="cmd-data-label">General</span>
+      <span class="data-label">General</span>
       <FeedbackButton
         ref="autonCheckbox"
         class="w-full"
@@ -22,7 +22,7 @@
       />
     </div>
     <div class="flex flex-col gap-1">
-      <span class="cmd-data-label">Navigation</span>
+      <span class="data-label">Navigation</span>
       <FeedbackButton
         class="w-full"
         data-testid="pw-pure-pursuit-toggle"
@@ -49,7 +49,7 @@
       />
     </div>
     <div class="flex flex-col gap-1">
-      <span class="cmd-data-label">Perception</span>
+      <span class="data-label">Perception</span>
       <FeedbackButton
         class="w-full"
         :name="'Stereo Detector'"
@@ -79,14 +79,13 @@ const emit = defineEmits<{
 }>()
 
 const autonAction = (newState: boolean) => {
-  const routeMap = autonomyStore.routeForMap
   const waypoints = newState
-    ? routeMap.map(waypoint => ({
-        latitude_degrees: waypoint.latLng.lat,
-        longitude_degrees: waypoint.latLng.lng,
-        tag_id: waypoint.tag_id,
-        type: waypoint.type,
-        enable_costmap: waypoint.enable_costmap,
+    ? autonomyStore.execution.map(wp => ({
+        latitude_degrees: wp.lat,
+        longitude_degrees: wp.lon,
+        tag_id: wp.tag_id,
+        type: wp.type,
+        enable_costmap: autonomyStore.allCostmapToggle,
       }))
     : []
 

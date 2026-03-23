@@ -1,8 +1,7 @@
 <template>
   <div class="flex flex-col gap-2 h-full">
-    <h4 class="component-header">Arm</h4>
-    <div class="overflow-x-auto cmd-scroll flex-1">
-      <table class="cmd-table compact-table w-full">
+    <div class="overflow-x-auto scroll flex-1">
+      <table class="table compact-table w-full">
         <thead>
           <tr>
             <th>Joint</th>
@@ -15,14 +14,14 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="j in joints" :key="j.id" :class="stale ? 'row-no-data' : stateRowClass(stateFor(j.id), errorFor(j.id))">
+          <tr v-for="j in joints" :key="j.id" :class="stale ? 'row-no-data' : stateRowClass(fieldAt(states, j.id), fieldAt(errors, j.id))">
             <td class="font-bold">{{ j.label }}</td>
-            <td>{{ formatState(stateFor(j.id)) }}</td>
-            <td>{{ formatError(errorFor(j.id)) }}</td>
-            <td class="numeric-col">{{ formatNumber(valueFor(positions, j.id)) }}</td>
-            <td class="numeric-col">{{ formatNumber(valueFor(velocities, j.id)) }}</td>
-            <td class="numeric-col">{{ formatNumber(valueFor(currents, j.id)) }}</td>
-            <td>{{ formatLimit(limitFor(j.id)) }}</td>
+            <td>{{ formatState(fieldAt(states, j.id)) }}</td>
+            <td>{{ formatError(fieldAt(errors, j.id)) }}</td>
+            <td v-html="formatNumber(fieldAt(positions, j.id), 1, 2, true)"></td>
+            <td v-html="formatNumber(fieldAt(velocities, j.id), 1, 2, true)"></td>
+            <td v-html="formatNumber(fieldAt(currents, j.id), 1)"></td>
+            <td>{{ formatLimit(fieldAt(limitHits, j.id)) }}</td>
           </tr>
         </tbody>
       </table>
@@ -35,7 +34,8 @@ import { ref, computed, watch } from 'vue'
 import { useWebsocketStore } from '@/stores/websocket'
 import { storeToRefs } from 'pinia'
 import type { ControllerStateMessage } from '@/types/websocket'
-import { useStaleTimer, formatState, formatNumber, formatLimit, formatError, stateRowClass } from '@/composables/useControllerState'
+import { useStaleTimer, formatState, formatLimit, formatError, stateRowClass } from '@/composables/useControllerState'
+import { formatNumber } from '@/utils/formatNumber'
 
 const websocketStore = useWebsocketStore()
 const { messages } = storeToRefs(websocketStore)
@@ -75,28 +75,8 @@ const joints = [
   { id: 'joint_a', label: 'Joint A' },
 ]
 
-function indexFor(id: string): number {
-  return names.value.indexOf(id)
-}
-
 function fieldAt<T>(arr: T[], id: string): T | undefined {
-  const i = indexFor(id)
+  const i = names.value.indexOf(id)
   return i >= 0 && i < arr.length ? arr[i] : undefined
-}
-
-function stateFor(id: string): string | undefined {
-  return fieldAt(states.value, id)
-}
-
-function errorFor(id: string): string | undefined {
-  return fieldAt(errors.value, id)
-}
-
-function valueFor(arr: number[], id: string): number | undefined {
-  return fieldAt(arr, id)
-}
-
-function limitFor(id: string): number | undefined {
-  return fieldAt(limitHits.value, id)
 }
 </script>

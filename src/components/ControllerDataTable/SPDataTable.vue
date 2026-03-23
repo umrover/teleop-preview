@@ -1,8 +1,7 @@
 <template>
   <div class="flex flex-col gap-2 h-full">
-    <h4 class="component-header">SP</h4>
-    <div class="overflow-x-auto cmd-scroll flex-1">
-      <table class="cmd-table compact-table w-full">
+    <div class="overflow-x-auto scroll flex-1">
+      <table class="table compact-table w-full">
         <thead>
           <tr>
             <th>Motor</th>
@@ -18,8 +17,8 @@
             <td class="font-bold">{{ name }}</td>
             <td>{{ formatState(states[i]) }}</td>
             <td>{{ formatError(errors[i]) }}</td>
-            <td class="numeric-col">{{ formatNumber(positions[i]) }}</td>
-            <td class="numeric-col">{{ formatNumber(currents[i]) }}</td>
+            <td v-html="formatNumber(positions[i])"></td>
+            <td v-html="formatNumber(currents[i])"></td>
             <td>{{ formatLimit(limitHits[i]) }}</td>
           </tr>
         </tbody>
@@ -33,7 +32,8 @@ import { ref, computed, watch } from 'vue'
 import { useWebsocketStore } from '@/stores/websocket'
 import { storeToRefs } from 'pinia'
 import type { ControllerStateMessage } from '@/types/websocket'
-import { useStaleTimer, formatState, formatNumber, formatLimit, formatError, stateRowClass } from '@/composables/useControllerState'
+import { useStaleTimer, formatState, formatLimit, formatError, stateRowClass } from '@/composables/useControllerState'
+import { formatNumber } from '@/utils/formatNumber'
 
 const websocketStore = useWebsocketStore()
 const { messages } = storeToRefs(websocketStore)

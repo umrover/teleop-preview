@@ -43,14 +43,14 @@ function axis(index: number): number {
   return axes.value[index] ?? 0
 }
 
-const twistAngle = computed(() => axis(2) * Math.PI * 0.75)
+const twistAngle = computed(() => axis(2) * Math.PI * 0.2)
 
 const forwardBack = computed(() => axis(1))
 const baseDotX = computed(() => forwardBack.value * 38 * Math.sin(twistAngle.value))
 const baseDotY = computed(() => forwardBack.value * -38 * Math.cos(twistAngle.value))
 
 const microOffsetX = computed(() => axis(4) * 6)
-const microOffsetY = computed(() => axis(5) * -6)
+const microOffsetY = computed(() => axis(5) * 6)
 const hasMicro = computed(() => Math.abs(axis(4)) > 0.05 || Math.abs(axis(5)) > 0.05)
 
 const dotX = computed(() => baseDotX.value + microOffsetX.value)
@@ -62,9 +62,8 @@ const throttleWidth = computed(() => Math.max(0, throttleNorm.value * 80))
 
 <style scoped>
 .joystick-svg {
-  --outline: #6c757d;
-  --base: #dee2e6;
-  --label: #6c757d;
+  --outline: var(--text-muted);
+  --base: var(--input-border);
   width: 100%;
   height: auto;
 }

@@ -37,7 +37,8 @@
       <button class="overlay-toolbar-btn" :class="{ 'overlay-toolbar-btn-active': online }" @click="online = !online">
         Online
       </button>
-      <button @click="centerOnRover" class="overlay-toolbar-btn">Center</button>
+      <button @click="centerOnRover" class="overlay-toolbar-btn">Center on Rover</button>
+      <button @click="centerOnDrone" class="overlay-toolbar-btn">Center on Drone</button>
     </div>
   </div>
 </template>
@@ -58,8 +59,7 @@ import L from 'leaflet'
 import 'leaflet-rotatedmarker'
 import type { LeafletMouseEvent } from 'leaflet'
 import type { MapWaypoint } from '@/types/waypoints'
-import type { NavMessage } from '@/types/coordinates'
-import { ref, shallowRef, triggerRef, computed, watch } from 'vue'
+import { ref, watch } from 'vue'
 import { useRoverMap } from '@/composables/useRoverMap'
 
 const erdStore = useErdStore()
@@ -79,28 +79,21 @@ const {
   attribution,
   locationIcon,
   waypointIcon,
+  droneRef,
+  dronePath,
+  droneLatLng,
+  droneIcon,
   onMapReady,
   centerOnRover,
+  centerOnDrone,
   getMap,
-  navMessage,
 } = useRoverMap({
   maxOdomCount: 1000,
   drawFrequency: 1,
   initialCenter: [38.4225202, -110.7844653],
 })
 
-const drone_latitude_deg = ref(0)
-const drone_longitude_deg = ref(0)
-const droneRef = ref<{ leafletObject: L.Marker } | null>(null)
-let droneMarker: L.Marker | null = null
-const dronePath = shallowRef<L.LatLng[]>([])
 const circle = ref<L.Circle | null>(null)
-
-const droneIcon = L.icon({
-  iconUrl: '/drone_marker.svg',
-  iconSize: [64, 64],
-  iconAnchor: [32, 32],
-})
 const droneWaypointIcon = L.icon({
   iconUrl: '/waypoint_marker_drone.svg',
   iconSize: [64, 64],
@@ -114,16 +107,8 @@ const highlightedWaypointIcon = L.icon({
   popupAnchor: [0, -32],
 })
 
-const droneLatLng = computed(() => {
-  return L.latLng(drone_latitude_deg.value, drone_longitude_deg.value)
-})
-
 const handleMapReady = () => {
-  onMapReady(() => {
-    if (droneRef.value) {
-      droneMarker = droneRef.value.leafletObject as L.Marker
-    }
-  })
+  onMapReady()
 }
 
 const getClickedLatLon = (e: LeafletMouseEvent) => {
@@ -142,28 +127,6 @@ const getWaypointIcon = (waypoint: MapWaypoint, index: number) => {
     return waypointIcon
   }
 }
-
-watch(navMessage, (msg) => {
-  if (!msg) return
-  const navMsg = msg as NavMessage
-  if (navMsg.type === 'drone_waypoint') {
-    drone_latitude_deg.value = navMsg.latitude
-    drone_longitude_deg.value = navMsg.longitude
-  }
-})
-
-watch([drone_latitude_deg, drone_longitude_deg], () => {
-  const latLng = L.latLng(drone_latitude_deg.value, drone_longitude_deg.value)
-  if (droneMarker) {
-    droneMarker.setLatLng(latLng)
-  }
-
-  if (dronePath.value.length > 1000) {
-    dronePath.value.shift()
-  }
-  dronePath.value.push(latLng)
-  triggerRef(dronePath)
-})
 
 watch(searchWaypoint, (newIndex) => {
   const map = getMap()

@@ -5,15 +5,15 @@
       <span class="odom-header">Rover</span>
       <div class="odom-rows">
         <div class="odom-coord-row">
-          <span class="odom-value" :class="{ 'odom-no-data': fmtCoord(rover_latitude_deg, 3, 6).noData }"><span class="odom-pad">{{ fmtCoord(rover_latitude_deg, 3, 6).pad }}</span>{{ fmtCoord(rover_latitude_deg, 3, 6).num }}</span>
+          <span class="odom-value" v-html="formatNumber(rover_latitude_deg, 3, 6)"></span>
           <span class="odom-unit">{{ dirLabel(rover_latitude_deg, 'N', 'S') }}</span>
         </div>
         <div class="odom-coord-row">
-          <span class="odom-value" :class="{ 'odom-no-data': fmtCoord(rover_longitude_deg, 3, 6).noData }"><span class="odom-pad">{{ fmtCoord(rover_longitude_deg, 3, 6).pad }}</span>{{ fmtCoord(rover_longitude_deg, 3, 6).num }}</span>
+          <span class="odom-value" v-html="formatNumber(rover_longitude_deg, 3, 6)"></span>
           <span class="odom-unit">{{ dirLabel(rover_longitude_deg, 'E', 'W') }}</span>
         </div>
         <div class="odom-coord-row">
-          <span class="odom-value" :class="{ 'odom-no-data': fmtCoord(rover_altitude, 3, 1).noData }"><span class="odom-pad">{{ fmtCoord(rover_altitude, 3, 1).pad }}</span>{{ fmtCoord(rover_altitude, 3, 1).num }}</span>
+          <span class="odom-value" v-html="formatNumber(rover_altitude, 3, 1)"></span>
           <span class="odom-unit">m</span>
         </div>
       </div>
@@ -24,11 +24,11 @@
       <span class="odom-header">Base</span>
       <div class="odom-rows">
         <div class="odom-coord-row">
-          <span class="odom-value" :class="{ 'odom-no-data': fmtCoord(basestation_latitude_deg, 3, 6).noData }"><span class="odom-pad">{{ fmtCoord(basestation_latitude_deg, 3, 6).pad }}</span>{{ fmtCoord(basestation_latitude_deg, 3, 6).num }}</span>
+          <span class="odom-value" v-html="formatNumber(basestation_latitude_deg, 3, 6)"></span>
           <span class="odom-unit">{{ dirLabel(basestation_latitude_deg, 'N', 'S') }}</span>
         </div>
         <div class="odom-coord-row">
-          <span class="odom-value" :class="{ 'odom-no-data': fmtCoord(basestation_longitude_deg, 3, 6).noData }"><span class="odom-pad">{{ fmtCoord(basestation_longitude_deg, 3, 6).pad }}</span>{{ fmtCoord(basestation_longitude_deg, 3, 6).num }}</span>
+          <span class="odom-value" v-html="formatNumber(basestation_longitude_deg, 3, 6)"></span>
           <span class="odom-unit">{{ dirLabel(basestation_longitude_deg, 'E', 'W') }}</span>
         </div>
       </div>
@@ -40,15 +40,15 @@
       <div class="odom-rows">
         <div class="odom-row">
           <span class="odom-label">Yaw</span>
-          <span class="odom-value" :class="{ 'odom-no-data': rover_bearing_deg == null }">{{ fmtDeg(rover_bearing_deg) }}<span class="odom-unit">&deg;</span></span>
+          <span class="odom-value" v-html="formatNumber(rover_bearing_deg, 3, 0)"></span><span class="odom-unit">&deg;</span>
         </div>
         <div class="odom-row">
           <span class="odom-label">Pit</span>
-          <span class="odom-value" :class="{ 'odom-no-data': pitch == null }">{{ fmtDeg(pitch) }}<span class="odom-unit">&deg;</span></span>
+          <span class="odom-value" v-html="formatNumber(pitch, 3, 0)"></span><span class="odom-unit">&deg;</span>
         </div>
         <div class="odom-row">
           <span class="odom-label">Rol</span>
-          <span class="odom-value" :class="{ 'odom-no-data': roll == null }">{{ fmtDeg(roll) }}<span class="odom-unit">&deg;</span></span>
+          <span class="odom-value" v-html="formatNumber(roll, 3, 0)"></span><span class="odom-unit">&deg;</span>
         </div>
       </div>
     </div>
@@ -92,11 +92,11 @@
       <span class="odom-header">VEL</span>
       <div class="odom-rows">
         <div class="odom-coord-row">
-          <span class="odom-value" :class="{ 'odom-no-data': fmtCoord(linear_x, 2, 2).noData }"><span class="odom-pad">{{ fmtCoord(linear_x, 2, 2).pad }}</span>{{ fmtCoord(linear_x, 2, 2).num }}</span>
+          <span class="odom-value" v-html="formatNumber(linear_x, 2, 2)"></span>
           <span class="odom-unit">m/s</span>
         </div>
         <div class="odom-coord-row">
-          <span class="odom-value" :class="{ 'odom-no-data': fmtCoord(angular_z, 2, 2).noData }"><span class="odom-pad">{{ fmtCoord(angular_z, 2, 2).pad }}</span>{{ fmtCoord(angular_z, 2, 2).num }}</span>
+          <span class="odom-value" v-html="formatNumber(angular_z, 2, 2)"></span>
           <span class="odom-unit">&deg;/s</span>
         </div>
       </div>
@@ -108,6 +108,7 @@
 import { ref } from 'vue'
 import { useWebsocketStore } from '@/stores/websocket'
 import { quaternionToMapAngle } from '../utils/map.ts'
+import { formatNumber } from '@/utils/formatNumber'
 import type { GpsFixMessage, BasestationPositionMessage, DroneWaypointMessage, OrientationMessage, CalibrationMessage } from '../types/coordinates'
 import type { CmdVelMessage } from '@/types/websocket'
 import IndicatorDot from './IndicatorDot.vue'
@@ -133,22 +134,6 @@ const accel_calibration = ref<number | null>(null)
 const linear_x = ref<number | null>(null)
 const angular_z = ref<number | null>(null)
 
-function fmtCoord(value: number | null, intDigits: number, fracDigits: number): { pad: string; num: string; noData: boolean } {
-  if (value === null) {
-    const placeholder = '\u2012'.repeat(intDigits) + '.' + '\u2012'.repeat(fracDigits)
-    return { pad: '', num: placeholder, noData: true }
-  }
-  const abs = Math.abs(value)
-  const fixed = abs.toFixed(fracDigits)
-  const intPart = fixed.split('.')[0]
-  const padCount = Math.max(0, intDigits - intPart.length)
-  return { pad: '0'.repeat(padCount), num: fixed, noData: false }
-}
-
-function fmtDeg(value: number | null): string {
-  if (value === null) return '\u2012\u2012\u2012'
-  return value.toFixed(0)
-}
 
 function dirLabel(value: number | null, pos: string, neg: string): string {
   if (value === null) return '-'
@@ -197,7 +182,6 @@ websocketStore.onMessage<CmdVelMessage>('nav', 'cmd_vel', msg => {
   display: grid;
   grid-template-columns: 3fr 3fr 2fr 2fr 2fr 2fr;
   height: 100%;
-  font-family: var(--cmd-font-mono);
   font-size: 1.1rem;
 }
 
@@ -206,7 +190,7 @@ websocketStore.onMessage<CmdVelMessage>('nav', 'cmd_vel', msg => {
   flex-direction: column;
   gap: 0.5rem;
   padding: 0.5rem 0.75rem;
-  border-right: 1px solid var(--cmd-panel-border);
+  border-right: 1px solid var(--panel-border);
   min-width: 0;
 }
 
@@ -257,12 +241,4 @@ websocketStore.onMessage<CmdVelMessage>('nav', 'cmd_vel', msg => {
   margin-left: auto;
 }
 
-.odom-pad {
-  opacity: 0.25;
-}
-
-.odom-no-data {
-  color: var(--text-muted);
-  opacity: 0.4;
-}
 </style>
