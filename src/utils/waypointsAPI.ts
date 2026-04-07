@@ -67,25 +67,8 @@ export const waypointsAPI = {
     })
   },
 
-  clearStore(): Promise<DeleteWaypointResponse> {
-    return apiFetch('/waypoints/auton/store/clear/', { method: 'DELETE' })
-  },
-
-  clearStoreAll(): Promise<DeleteWaypointResponse> {
-    return apiFetch('/waypoints/auton/store/clear/all/', { method: 'DELETE' })
-  },
-
-  // --- Staging: planned route queue ---
-
-  getStaging(): Promise<CurrentCourseResponse> {
-    return apiFetch('/waypoints/auton/staging/')
-  },
-
-  saveStaging(course: AutonWaypoint[]): Promise<CurrentCourseResponse> {
-    return apiFetch('/waypoints/auton/staging/save/', {
-      method: 'POST',
-      body: JSON.stringify({ waypoints: course })
-    })
+  resetStore(): Promise<DeleteWaypointResponse> {
+    return apiFetch('/waypoints/auton/store/', { method: 'DELETE' })
   },
 
   // --- Execution: active navigation batch ---
