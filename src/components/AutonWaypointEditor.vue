@@ -130,7 +130,7 @@
             <div class="kbd-row"><kbd>g</kbd><kbd>g</kbd> or <kbd>Home</kbd> Jump to top</div>
             <div class="kbd-row"><kbd>G</kbd> or <kbd>End</kbd> Jump to bottom</div>
           </div>
-        <div>
+          <div>
             <h6 class="font-semibold mb-1">Actions</h6>
             <div class="kbd-row"><kbd>Enter</kbd> / <kbd>e</kbd> Edit waypoint (store)</div>
             <div class="kbd-row"><kbd>s</kbd> Stage to execution</div>
