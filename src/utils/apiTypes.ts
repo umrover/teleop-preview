@@ -81,11 +81,7 @@ export interface RAModeResponse extends APIResponse {
   mode?: string
 }
 
-export interface StowResponse extends APIResponse {
-  mode?: string
-  stow_target: {
-    pos: { x: number; y: number; z: number }
-    pitch: number
-    roll: number
-  }
+export interface ServoResponse extends APIResponse {
+  position?: number
+  at_tgt?: boolean
 }

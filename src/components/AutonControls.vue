@@ -23,13 +23,18 @@
     </div>
     <div class="flex flex-col gap-1">
       <span class="data-label">Costmap</span>
-      <FeedbackButton
-        class="w-full"
-        data-testid="pw-costmap-toggle-all"
-        :name="'All Costmaps'"
-        :checked="allCostmapToggle"
-        @toggle="handleCostmapToggle"
-      />
+      <div class="flex gap-1">
+        <button
+          class="btn btn-sm flex-1 btn-success"
+          data-testid="pw-costmap-all-on"
+          @click="autonomyStore.setAllCostmaps(true)"
+        >All On</button>
+        <button
+          class="btn btn-sm flex-1 btn-danger"
+          data-testid="pw-costmap-all-off"
+          @click="autonomyStore.setAllCostmaps(false)"
+        >All Off</button>
+      </div>
     </div>
     <div class="flex flex-col gap-1">
       <span class="data-label">Navigation</span>
@@ -58,23 +63,6 @@
         @toggle="handlePathInterpolationToggle"
       />
     </div>
-    <div class="flex flex-col gap-1">
-      <span class="data-label">Perception</span>
-      <FeedbackButton
-        class="w-full"
-        :name="'Stereo Detector'"
-        :checked="stereoDetectorEnabled"
-        :action="stereoDetectorAction"
-        @toggle="handleStereoDetectorToggle"
-      />
-      <FeedbackButton
-        class="w-full"
-        :name="'Image Detector'"
-        :checked="imageDetectorEnabled"
-        :action="imageDetectorAction"
-        @toggle="handleImageDetectorToggle"
-      />
-    </div>
   </div>
 </template>
 
@@ -95,7 +83,7 @@ const autonAction = (newState: boolean) => {
         longitude_degrees: wp.lon,
         tag_id: wp.tag_id,
         type: wp.type,
-        enable_costmap: autonomyStore.allCostmapToggle,
+        enable_costmap: wp.enable_costmap,
       }))
     : []
 
@@ -109,16 +97,10 @@ const teleopEnabled = computed(() => autonomyStore.teleopEnabled)
 const purePursuitEnabled = computed(() => autonomyStore.purePursuitEnabled)
 const pathRelaxationEnabled = computed(() => autonomyStore.pathRelaxationEnabled)
 const pathInterpolationEnabled = computed(() => autonomyStore.pathInterpolationEnabled)
-const stereoDetectorEnabled = computed(() => autonomyStore.stereoDetectorEnabled)
-const imageDetectorEnabled = computed(() => autonomyStore.imageDetectorEnabled)
-const allCostmapToggle = computed(() => autonomyStore.allCostmapToggle)
-
 const teleopAction = (newState: boolean) => autonAPI.enableTeleop(newState)
 const purePursuitAction = (newState: boolean) => autonAPI.togglePurePursuit(newState)
 const pathRelaxationAction = (newState: boolean) => autonAPI.togglePathRelaxation(newState)
 const pathInterpolationAction = (newState: boolean) => autonAPI.togglePathInterpolation(newState)
-const stereoDetectorAction = (newState: boolean) => autonAPI.toggleStereoDetector(newState)
-const imageDetectorAction = (newState: boolean) => autonAPI.toggleImageDetector(newState)
 
 const handleAutonToggle = (newState: boolean) => {
   autonomyStore.autonEnabled = newState
@@ -139,17 +121,5 @@ const handlePathRelaxationToggle = (newState: boolean) => {
 
 const handlePathInterpolationToggle = (newState: boolean) => {
   autonomyStore.pathInterpolationEnabled = newState
-}
-
-const handleStereoDetectorToggle = (newState: boolean) => {
-  autonomyStore.stereoDetectorEnabled = newState
-}
-
-const handleImageDetectorToggle = (newState: boolean) => {
-  autonomyStore.imageDetectorEnabled = newState
-}
-
-const handleCostmapToggle = (newState: boolean) => {
-  autonomyStore.allCostmapToggle = newState
 }
 </script>

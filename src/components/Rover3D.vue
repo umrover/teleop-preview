@@ -64,8 +64,9 @@
       <button
         type="button"
         class="overlay-toolbar-btn"
+        :class="{ 'overlay-toolbar-btn-active': costmapVisible }"
         @click="toggleCostMap()">
-        Cost Map <i :class="costmapVisible ? 'bi bi-check-square-fill' : 'bi bi-square'"></i>
+        Cost Map
       </button>
     </div>
   </div>
@@ -74,7 +75,7 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useWebsocketStore } from '@/stores/websocket'
-import type { ControllerStateMessage, IkFeedbackMessage, OccupancyGridMessage } from '@/types/websocket'
+import type { ControllerStateMessage, OccupancyGridMessage } from '@/types/websocket'
 import type { OrientationMessage } from '@/types/coordinates'
 import { quaternionToYaw } from '@/utils/map'
 import { useRoverScene, CameraType, NUM_COSTMAP_BLOCKS } from '@/composables/useRoverScene'
@@ -91,7 +92,6 @@ const {
   toggleCostMapVisibility,
   setCostMapVisibility,
   updateJoints,
-  updateIKTarget,
   setRoverHeading,
 } = useRoverScene()
 
@@ -219,6 +219,8 @@ const jointNameMap: Record<string, string> = {
   gripper: 'gripper_link',
 }
 
+const lastKnownPositions: Record<string, number> = {}
+
 const COSTMAP_VISIBLE_KEY = 'rover3d.costmapVisible'
 const costmapVisible = ref(localStorage.getItem(COSTMAP_VISIBLE_KEY) !== 'false')
 
@@ -246,23 +248,18 @@ onBeforeUnmount(() => {
 onMessage<ControllerStateMessage>('arm', 'arm_state', (msg) => {
   const joints = msg.names.map((name: string, index: number) => {
     const urdfName = jointNameMap[name] || name
-    const rawPosition: number = msg.positions[index] ?? 0
-    const position = urdfName === 'chassis_to_arm_a'
-      ? rawPosition * -100 + 40
-      : rawPosition
+    const incoming: number | null = (msg.positions as (number | null)[])[index] ?? null
 
+    if (incoming !== null) {
+      const mapped = urdfName === 'chassis_to_arm_a' ? incoming * -100 + 40 : incoming
+      lastKnownPositions[urdfName] = mapped
+    }
+
+    const position = lastKnownPositions[urdfName] ?? 0
     return { name: urdfName, position }
   })
 
   updateJoints(joints)
-})
-
-onMessage<IkFeedbackMessage>('arm', 'ik_feedback', (msg) => {
-  updateIKTarget({
-    x: msg.pos.x * 100,
-    y: msg.pos.z * 100,
-    z: msg.pos.y * -100 + 20,
-  })
 })
 
 

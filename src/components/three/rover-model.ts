@@ -9,15 +9,8 @@ export interface JointUpdate {
   position: number
 }
 
-export interface Position3D {
-  x: number
-  y: number
-  z: number
-}
-
 export interface RoverModel {
   updateJoints: (joints: JointUpdate[]) => void
-  updateIKTarget: (position: Position3D | null) => void
 }
 
 const DEFAULT_JOINT_VALUES: Record<string, number> = {
@@ -31,17 +24,6 @@ const DEFAULT_JOINT_VALUES: Record<string, number> = {
 
 export function loadRover(parent: THREE.Group): RoverModel {
   let rover: THREE.Object3D | null = null
-
-  const ikSphere = new THREE.Mesh(
-    new THREE.SphereGeometry(2, 16, 16),
-    new THREE.MeshStandardMaterial({
-      color: 0xff0000,
-      emissive: 0xff0000,
-      emissiveIntensity: 0.3,
-    }),
-  )
-  ikSphere.visible = false
-  parent.add(ikSphere)
 
   // Debug GUI (hidden by default)
   const gui = new GUI({ width: 400 })
@@ -74,7 +56,7 @@ export function loadRover(parent: THREE.Group): RoverModel {
     (robot: THREE.Object3D) => {
       rover = robot
 
-      // ROS Z-up to Three.js Y-up frame conversion
+      // ROS Z-up to Three.js Y-up conversion
       const roverContainer = new THREE.Group()
       roverContainer.position.set(0, -50, 0)
       roverContainer.rotation.set(-Math.PI / 2, 0, 0)
@@ -82,7 +64,7 @@ export function loadRover(parent: THREE.Group): RoverModel {
       roverContainer.add(robot)
       robot.updateMatrixWorld()
 
-      // Set initial joint positions (separated from GUI)
+      // parse joints and initial positions
       robot.traverse((obj: THREE.Object3D) => {
         const joint = obj as THREE.Object3D & {
           jointType?: string
@@ -106,7 +88,7 @@ export function loadRover(parent: THREE.Group): RoverModel {
         }
       })
 
-      // Debug GUI sliders (decoupled from initial joint setup)
+      // debug sliders
       robot.traverse((obj: THREE.Object3D) => {
         const joint = obj as THREE.Object3D & {
           jointType?: string
@@ -154,14 +136,5 @@ export function loadRover(parent: THREE.Group): RoverModel {
     })
   }
 
-  function updateIKTarget(position: Position3D | null) {
-    if (!position) {
-      ikSphere.visible = false
-      return
-    }
-    ikSphere.position.set(position.x + 10, position.y, position.z)
-    ikSphere.visible = true
-  }
-
-  return { updateJoints, updateIKTarget }
+  return { updateJoints }
 }

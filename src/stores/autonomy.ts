@@ -21,11 +21,9 @@ export const useAutonomyStore = defineStore('autonomy', () => {
   const highlightedWaypoint = ref(-1)
   const autonEnabled = ref(false)
   const teleopEnabled = ref(false)
-  const purePursuitEnabled = ref(false)
+  const purePursuitEnabled = ref(true)
   const pathRelaxationEnabled = ref(false)
   const pathInterpolationEnabled = ref(false)
-  const stereoDetectorEnabled = ref(false)
-  const imageDetectorEnabled = ref(false)
   const odomFormat = ref('DM')
   const clickPoint = ref({ lat: 0, lon: 0 })
 
@@ -42,6 +40,7 @@ export const useAutonomyStore = defineStore('autonomy', () => {
       name: wp.name,
       tag_id: wp.tag_id,
       type: wp.type,
+      enable_costmap: wp.enable_costmap,
     }))
   )
 
@@ -129,14 +128,14 @@ export const useAutonomyStore = defineStore('autonomy', () => {
 
   async function addToExecution(waypoint: AutonWaypoint) {
     if (isInList(execution.value, waypoint)) return
-    execution.value = [...execution.value, { ...waypoint }]
+    execution.value = [...execution.value, { ...waypoint, enable_costmap: waypoint.enable_costmap ?? allCostmapToggle.value }]
     await saveExecution()
   }
 
   async function addManyToExecution(waypoints: AutonWaypoint[]) {
     const toAdd = waypoints.filter(wp => !isInList(execution.value, wp))
     if (toAdd.length === 0) return
-    execution.value = [...execution.value, ...toAdd.map(wp => ({ ...wp }))]
+    execution.value = [...execution.value, ...toAdd.map(wp => ({ ...wp, enable_costmap: wp.enable_costmap ?? allCostmapToggle.value }))]
     await saveExecution()
   }
 
@@ -178,8 +177,23 @@ export const useAutonomyStore = defineStore('autonomy', () => {
     await saveExecution()
   }
 
+  function setAllCostmaps(value: boolean) {
+    allCostmapToggle.value = value
+    execution.value = execution.value.map(wp => ({ ...wp, enable_costmap: value }))
+    saveExecution()
+  }
+
   function toggleAllCostmaps() {
-    allCostmapToggle.value = !allCostmapToggle.value
+    setAllCostmaps(!allCostmapToggle.value)
+  }
+
+  function toggleExecutionCostmap(index: number) {
+    const next = [...execution.value]
+    const wp = next[index]
+    if (!wp) return
+    next[index] = { ...wp, enable_costmap: !wp.enable_costmap }
+    execution.value = next
+    saveExecution()
   }
 
   function setNavState(state: string) {
@@ -203,8 +217,6 @@ export const useAutonomyStore = defineStore('autonomy', () => {
     purePursuitEnabled,
     pathRelaxationEnabled,
     pathInterpolationEnabled,
-    stereoDetectorEnabled,
-    imageDetectorEnabled,
     odomFormat,
     clickPoint,
     storeForMap,
@@ -223,7 +235,9 @@ export const useAutonomyStore = defineStore('autonomy', () => {
     saveExecution,
     reorderExecution,
     clearExecution,
+    setAllCostmaps,
     toggleAllCostmaps,
+    toggleExecutionCostmap,
     setNavState,
     resetAll,
   }
